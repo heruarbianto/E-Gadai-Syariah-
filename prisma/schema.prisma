@@ -1,0 +1,1638 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Get a free hosted Postgres database in seconds: `npx create-db`
+
+generator client {
+  provider = "prisma-client"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "mysql"
+}
+
+
+
+// ============================================================
+// ENUMS
+// ============================================================
+
+enum UserStatus {
+  PENDING
+  ACTIVE
+  SUSPENDED
+  BLOCKED
+  DELETED
+}
+
+enum UserRole {
+  CUSTOMER
+  STAFF
+  APPRAISER
+  CASHIER
+  WAREHOUSE
+  AUCTION_ADMIN
+  ACCOUNTANT
+  ADMIN
+  SUPER_ADMIN
+}
+
+enum Gender {
+  MALE
+  FEMALE
+  OTHER
+}
+
+enum VerificationStatus {
+  PENDING
+  VERIFIED
+  REJECTED
+  EXPIRED
+}
+
+enum DocumentType {
+  KTP
+  SELFIE_WITH_KTP
+  FAMILY_CARD
+  NPWP
+  BANK_ACCOUNT
+  OTHER
+}
+
+enum ApplicationStatus {
+  DRAFT
+  SUBMITTED
+  UNDER_REVIEW
+  NEED_REVISION
+  APPROVED
+  REJECTED
+  WAITING_FOR_DELIVERY
+  EXPIRED
+  CANCELLED
+  ITEM_RECEIVED
+  AGREEMENT_SIGNED
+  DISBURSED
+  ACTIVE
+  PARTIALLY_PAID
+  PAID_OFF
+  DEFAULTED
+  SETTLEMENT
+  AUCTION
+  COMPLETED
+}
+
+enum ItemCategory {
+  ELECTRONICS
+  VEHICLE
+  JEWELRY
+  GOLD
+  MOBILE_PHONE
+  LAPTOP
+  COMPUTER
+  CAMERA
+  WATCH
+  MUSICAL_INSTRUMENT
+  HOUSEHOLD
+  OTHER
+}
+
+enum ItemCondition {
+  NEW
+  LIKE_NEW
+  GOOD
+  FAIR
+  POOR
+  DAMAGED
+}
+
+enum ItemPhotoType {
+  FRONT
+  BACK
+  LEFT
+  RIGHT
+  TOP
+  BOTTOM
+  SERIAL_NUMBER
+  IMEI
+  DAMAGE
+  ACCESSORY
+  PACKAGING
+  OTHER
+}
+
+enum ValuationStatus {
+  DRAFT
+  SUBMITTED
+  APPROVED
+  REJECTED
+}
+
+enum ApprovalDecision {
+  APPROVED
+  REJECTED
+  REVISION
+}
+
+enum AgreementStatus {
+  DRAFT
+  GENERATED
+  PRINTED
+  SIGNED
+  CANCELLED
+  COMPLETED
+}
+
+enum SignatureType {
+  HANDWRITTEN
+  ELECTRONIC
+  DIGITAL
+}
+
+enum DisbursementStatus {
+  PENDING
+  APPROVED
+  PAID
+  CANCELLED
+  FAILED
+}
+
+enum DisbursementMethod {
+  CASH
+  BANK_TRANSFER
+}
+
+enum PaymentType {
+  PRINCIPAL
+  UJRAH
+  ADMINISTRATIVE_FEE
+  AUCTION_SETTLEMENT
+  OTHER
+}
+
+enum PaymentStatus {
+  PENDING
+  VERIFIED
+  REJECTED
+  CANCELLED
+}
+
+enum PaymentMethod {
+  CASH
+  BANK_TRANSFER
+  QRIS
+  OTHER
+}
+
+enum StorageStatus {
+  NOT_RECEIVED
+  STORED
+  RELEASED
+  MOVED
+  LOST
+  DAMAGED
+}
+
+enum StorageMovementType {
+  IN
+  MOVE
+  OUT
+  INVENTORY_CHECK
+}
+
+enum AuctionStatus {
+  DRAFT
+  SCHEDULED
+  OPEN
+  CLOSED
+  CANCELLED
+  SETTLEMENT
+  COMPLETED
+}
+
+enum BidStatus {
+  ACTIVE
+  WINNING
+  OUTBID
+  CANCELLED
+}
+
+enum AuctionSettlementStatus {
+  PENDING
+  PAID
+  CANCELLED
+  COMPLETED
+}
+
+enum NotificationType {
+  SYSTEM
+  APPLICATION
+  APPROVAL
+  REJECTION
+  DISBURSEMENT
+  PAYMENT
+  DUE_DATE
+  AUCTION
+  SECURITY
+  DOCUMENT
+}
+
+enum NotificationChannel {
+  IN_APP
+  EMAIL
+  SMS
+  WHATSAPP
+}
+
+enum NotificationStatus {
+  PENDING
+  SENT
+  FAILED
+  READ
+}
+
+enum AuditAction {
+  CREATE
+  UPDATE
+  DELETE
+  LOGIN
+  LOGOUT
+  VERIFY
+  REJECT
+  APPROVE
+  PRINT
+  SIGN
+  DISBURSE
+  PAYMENT
+  STORAGE_IN
+  STORAGE_MOVE
+  STORAGE_OUT
+  AUCTION_CREATE
+  AUCTION_OPEN
+  AUCTION_CLOSE
+  BID
+  REFUND
+  OTHER
+}
+
+enum CashTransactionType {
+  OPENING_BALANCE
+  DISBURSEMENT
+  REPAYMENT
+  REFUND
+  AUCTION_RECEIPT
+  EXPENSE
+  ADJUSTMENT
+  CLOSING_BALANCE
+  OTHER
+}
+
+enum CashTransactionStatus {
+  PENDING
+  COMPLETED
+  CANCELLED
+}
+
+enum ContractPartyType {
+  CUSTOMER
+  COMPANY
+}
+
+enum DeadlineType {
+  ARRIVAL
+  PAYMENT
+  MATURITY
+  AUCTION
+  OTHER
+}
+
+enum InspectionType {
+  INCOMING
+  OUTGOING
+  PERIODIC
+  AUCTION
+}
+
+enum FeeType {
+  UJRAH
+  ADMINISTRATIVE
+  OTHER
+}
+
+enum FeeCalculationType {
+  FIXED
+  PER_DAY
+  PER_PERIOD
+  PER_ITEM
+}
+
+enum AccountingEntryType {
+  DEBIT
+  CREDIT
+}
+
+enum AccountingReferenceType {
+  DISBURSEMENT
+  PAYMENT
+  AUCTION_SETTLEMENT
+  CASH_TRANSACTION
+  ADJUSTMENT
+  OTHER
+}
+
+enum AccountingPeriodStatus {
+  OPEN
+  CLOSED
+}
+
+enum AuctionPaymentStatus {
+  PENDING
+  PAID
+  FAILED
+  CANCELLED
+}
+
+enum AuctionDeliveryStatus {
+  PENDING
+  READY
+  RELEASED
+}
+
+enum FileOwnerType {
+  USER
+  ITEM
+  APPLICATION
+  AGREEMENT
+  INSPECTION
+  AUCTION
+  PAYMENT
+  OTHER
+}
+
+
+// ============================================================
+// ORGANIZATION / BRANCH
+// ============================================================
+
+model Company {
+  id                 String   @id @default(uuid()) 
+  code               String   @unique
+  name               String
+  legalName          String?
+  address            String?
+  phone              String?
+  email              String?
+  website             String?
+  isActive            Boolean  @default(true)
+
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+
+  branches            Branch[]
+  agreementTemplates  AgreementTemplate[]
+  chartOfAccounts     ChartOfAccount[]
+  accountingPeriods   AccountingPeriod[]
+}
+
+model Branch {
+  id                  String   @id @default(uuid()) 
+  companyId           String   
+  company             Company  @relation(fields: [companyId], references: [id])
+
+  code                String
+  name                String
+  address             String?
+  province            String?
+  city                String?
+  district            String?
+  village             String?
+  postalCode          String?
+  phone               String?
+  email               String?
+
+  isActive             Boolean @default(true)
+
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
+
+  userRoles            UserRoleAssignment[]
+  applications         PawnApplication[]
+  storageLocations     StorageLocation[]
+  agreements           Agreement[]
+  disbursements        Disbursement[]
+  cashTransactions     CashTransaction[]
+  auctions             Auction[]
+  payments             Payment[]
+  inspections          ItemInspection[]
+  accountingEntries    AccountingEntry[]
+
+  @@unique([companyId, code])
+  @@index([companyId])
+  @@index([city])
+}
+
+
+// ============================================================
+// USERS / AUTH
+// ============================================================
+
+model User {
+  id                    String   @id @default(uuid()) 
+  email                 String  @unique
+  phone                 String   @unique
+  passwordHash          String
+  status                UserStatus @default(PENDING)
+
+  emailVerifiedAt      DateTime?
+  phoneVerifiedAt      DateTime?
+  lastLoginAt          DateTime?
+
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+  deletedAt             DateTime?
+
+  profile               UserProfile?
+  roles                 UserRoleAssignment[]
+  identityDocuments     IdentityDocument[]
+  notifications         Notification[]
+  applications          PawnApplication[]
+  payments              Payment[]
+  bids                  AuctionBid[]
+  auditLogs             AuditLog[] @relation("AuditActor")
+  sessions              UserSession[]
+  emergencyContacts     EmergencyContact[]
+  bankAccounts          BankAccount[]
+  valuations            Valuation[] @relation("Appraiser")
+  approvals             ApplicationApproval[] @relation("ApprovalAdmin")
+  disbursements         Disbursement[] @relation("DisbursementCashier")
+  cashTransactions      CashTransaction[] @relation("Cashier")
+  storageMovements      StorageMovement[] @relation("StorageOperator")
+  auctionsCreated       Auction[] @relation("AuctionCreator")
+  inspectionsPerformed  ItemInspection[] @relation("InspectionPerformer")
+  itemHandovers         ItemHandover[] @relation("HandoverOperator")
+  itemReleases          ItemRelease[] @relation("ReleaseOperator")
+  auctionSettlements    AuctionSettlement[] @relation("AuctionSettlementOperator")
+  emailVerificationTokens EmailVerificationToken[]
+
+  @@index([status])
+}
+
+model UserProfile {
+  id                    String   @id @default(uuid()) 
+  userId                String   @unique 
+  user                  User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  nik                   String?  @unique
+  fullName              String
+  birthPlace            String?
+  birthDate             DateTime?
+  gender                Gender?
+
+  address               String?
+  province              String?
+  city                  String?
+  district              String?
+  village               String?
+  postalCode            String?
+
+  occupation            String?
+  employerName          String?
+  monthlyIncome         Decimal? @db.Decimal(18, 2)
+
+  profilePhotoUrl       String?
+  isComplete            Boolean @default(false)
+  completedAt           DateTime?
+
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+}
+
+model UserRoleAssignment {
+  id                    String   @id @default(uuid()) 
+  userId                String   
+  user                  User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  role                  UserRole
+  branchId              String?  
+  branch                Branch? @relation(fields: [branchId], references: [id])
+
+  createdAt             DateTime @default(now())
+
+  @@unique([userId, role, branchId])
+  @@index([role])
+  @@index([branchId])
+}
+
+model UserSession {
+  id                    String   @id @default(uuid()) 
+  userId                String   
+  user                  User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  tokenHash             String   @unique
+  ipAddress             String?
+  userAgent             String?
+  expiresAt             DateTime
+  createdAt             DateTime @default(now())
+
+  @@index([userId])
+  @@index([expiresAt])
+}
+
+
+// ============================================================
+// KYC
+// ============================================================
+
+model IdentityDocument {
+  id                    String   @id @default(uuid()) 
+  userId                String   
+  user                  User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  type                  DocumentType
+  documentNumber        String?
+  fileUrl               String
+  fileHash              String?
+
+  verificationStatus    VerificationStatus @default(PENDING)
+  verifiedById          String? 
+  verifiedAt            DateTime?
+  rejectionReason       String?
+  expiresAt             DateTime?
+
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+
+  @@index([userId])
+  @@index([type])
+  @@index([verificationStatus])
+}
+
+model EmergencyContact {
+  id                    String   @id @default(uuid()) 
+  userId                String   
+  user                  User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  name                  String
+  relationship          String
+  phone                 String
+  address               String?
+
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+
+  @@index([userId])
+}
+
+model BankAccount {
+  id                    String   @id @default(uuid()) 
+  userId                String   
+  user                  User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  bankName              String
+  accountNumber         String
+  accountName           String
+
+  isVerified             Boolean @default(false)
+  isPrimary              Boolean @default(false)
+
+  createdAt              DateTime @default(now())
+  updatedAt              DateTime @updatedAt
+
+  @@index([userId])
+}
+
+
+// ============================================================
+// APPLICATION
+// ============================================================
+
+model PawnApplication {
+  id                    String   @id @default(uuid()) 
+  applicationNumber     String   @unique
+
+  customerId            String   
+  customer              User     @relation(fields: [customerId], references: [id])
+
+  branchId              String   
+  branch                Branch   @relation(fields: [branchId], references: [id])
+
+  status                ApplicationStatus @default(DRAFT)
+
+  requestedDurationDays Int
+  submittedAt           DateTime?
+  approvedAt            DateTime?
+  rejectedAt            DateTime?
+  arrivalDeadline       DateTime?
+  rejectionReason       String?
+  notes                 String?
+
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+
+  item                  PawnItem?
+  valuations            Valuation[]
+  approvals             ApplicationApproval[]
+  agreement             Agreement?
+  disbursement          Disbursement?
+  payments              Payment[]
+  deadlines             Deadline[]
+  statusHistories       ApplicationStatusHistory[]
+  handover              ItemHandover?
+  settlement             PawnSettlement?
+
+  @@index([customerId])
+  @@index([branchId])
+  @@index([status])
+  @@index([createdAt])
+}
+
+model PawnItem {
+  id                    String   @id @default(uuid()) 
+  applicationId         String   @unique 
+  application            PawnApplication @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+
+  itemCode              String   @unique
+  category              ItemCategory
+
+  name                  String
+  brand                 String?
+  model                 String?
+  serialNumber          String?
+  imei                  String?
+  year                  Int?
+
+  condition             ItemCondition?
+  conditionDescription  String?
+
+  estimatedMarketValue  Decimal? @db.Decimal(18, 2)
+  approvedValue         Decimal? @db.Decimal(18, 2)
+  qardhAmount           Decimal? @db.Decimal(18, 2)
+
+  status                StorageStatus @default(NOT_RECEIVED)
+
+  receivedAt            DateTime?
+  releasedAt            DateTime?
+
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+
+  photos                PawnItemPhoto[]
+  valuations            Valuation[]
+  storageMovements      StorageMovement[]
+  storageAssignment     StorageAssignment?
+  inspections           ItemInspection[]
+  handover              ItemHandover?
+  release               ItemRelease?
+  auctionItem           AuctionItem?
+
+  @@index([category])
+  @@index([serialNumber])
+  @@index([status])
+}
+
+model PawnItemPhoto {
+  id                    String   @id @default(uuid()) 
+  itemId                String   
+  item                  PawnItem @relation(fields: [itemId], references: [id], onDelete: Cascade)
+
+  type                  ItemPhotoType
+  fileUrl               String
+  fileHash              String?
+  uploadedAt            DateTime @default(now())
+
+  @@index([itemId])
+  @@index([type])
+}
+
+
+// ============================================================
+// APPRAISAL
+// ============================================================
+
+model Valuation {
+  id                    String   @id @default(uuid()) 
+  applicationId         String   
+  application            PawnApplication @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+
+  itemId                String   
+  item                  PawnItem @relation(fields: [itemId], references: [id])
+
+  appraiserId           String   
+  appraiser             User     @relation("Appraiser", fields: [appraiserId], references: [id])
+
+  status                ValuationStatus @default(DRAFT)
+
+  marketValue           Decimal @db.Decimal(18, 2)
+  collateralValue       Decimal @db.Decimal(18, 2)
+  maximumQardh          Decimal @db.Decimal(18, 2)
+  approvedQardh         Decimal? @db.Decimal(18, 2)
+
+  conditionNotes        String?
+  valuationNotes        String?
+
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+  submittedAt           DateTime?
+  approvedAt            DateTime?
+
+  @@index([applicationId])
+  @@index([itemId])
+  @@index([appraiserId])
+}
+
+model ApplicationApproval {
+  id                    String   @id @default(uuid()) 
+  applicationId         String   
+  application            PawnApplication @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+
+  adminId               String   
+  admin                 User     @relation("ApprovalAdmin", fields: [adminId], references: [id])
+
+  decision              ApprovalDecision
+  approvedQardh         Decimal? @db.Decimal(18, 2)
+  estimatedUjrah        Decimal? @db.Decimal(18, 2)
+  administrativeFee     Decimal? @db.Decimal(18, 2)
+  notes                 String?
+
+  createdAt             DateTime @default(now())
+
+  @@index([applicationId])
+  @@index([adminId])
+}
+
+
+// ============================================================
+// FEE / UJRAH RULES
+// ============================================================
+
+model FeeRule {
+  id                    String   @id @default(uuid()) 
+
+  name                  String
+  description           String?
+  type                  FeeType
+  calculationType       FeeCalculationType
+
+  itemCategory          ItemCategory?
+  durationDaysMin       Int?
+  durationDaysMax       Int?
+
+  fixedAmount            Decimal? @db.Decimal(18, 2)
+  amountPerDay           Decimal? @db.Decimal(18, 2)
+  amountPerPeriod        Decimal? @db.Decimal(18, 2)
+
+  isActive              Boolean @default(true)
+  effectiveFrom         DateTime
+  effectiveUntil        DateTime?
+
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+
+  agreementFees         AgreementFee[]
+  feeSnapshots          FeeSnapshot[]
+
+  @@index([type])
+  @@index([itemCategory])
+  @@index([isActive])
+}
+
+model FeeSnapshot {
+  id                    String   @id @default(uuid()) 
+  feeRuleId             String?  
+  feeRule               FeeRule? @relation(fields: [feeRuleId], references: [id])
+
+  name                  String
+  type                  FeeType
+  calculationType       FeeCalculationType
+
+  baseAmount            Decimal? @db.Decimal(18, 2)
+  calculatedAmount      Decimal @db.Decimal(18, 2)
+  calculationNotes     String?
+
+  createdAt             DateTime @default(now())
+
+  agreementFees         AgreementFee[]
+
+  @@index([feeRuleId])
+}
+
+model AgreementFee {
+  id                    String   @id @default(uuid()) 
+
+  agreementId           String   
+  agreement             Agreement @relation(fields: [agreementId], references: [id], onDelete: Cascade)
+
+  feeRuleId             String?  
+  feeRule               FeeRule? @relation(fields: [feeRuleId], references: [id])
+
+  feeSnapshotId         String?  
+  feeSnapshot           FeeSnapshot? @relation(fields: [feeSnapshotId], references: [id])
+
+  type                  FeeType
+  name                  String
+  amount                Decimal @db.Decimal(18, 2)
+
+  createdAt             DateTime @default(now())
+
+  @@index([agreementId])
+}
+
+
+// ============================================================
+// AGREEMENT / AKAD
+// ============================================================
+
+model AgreementTemplate {
+  id                    String   @id @default(uuid()) 
+
+  companyId             String   
+  company               Company  @relation(fields: [companyId], references: [id])
+
+  code                  String
+  name                  String
+  description           String?
+  isActive              Boolean @default(true)
+
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+
+  versions              AgreementTemplateVersion[]
+
+  @@unique([companyId, code])
+}
+
+model AgreementTemplateVersion {
+  id                    String   @id @default(uuid()) 
+
+  templateId            String   
+  template              AgreementTemplate @relation(fields: [templateId], references: [id], onDelete: Cascade)
+
+  version               String
+  content               String
+
+  isActive              Boolean @default(true)
+
+  createdAt             DateTime @default(now())
+
+  agreements             Agreement[]
+
+  @@unique([templateId, version])
+}
+
+model Agreement {
+  id                    String   @id @default(uuid()) 
+  agreementNumber       String   @unique
+
+  applicationId        String   @unique 
+  application            PawnApplication @relation(fields: [applicationId], references: [id])
+
+  branchId              String   
+  branch                Branch   @relation(fields: [branchId], references: [id])
+
+  templateVersionId     String?  
+  templateVersion       AgreementTemplateVersion? @relation(fields: [templateVersionId], references: [id])
+
+  status                AgreementStatus @default(DRAFT)
+
+  contractVersion       String
+
+  qardhAmount           Decimal @db.Decimal(18, 2)
+  ujrahAmount           Decimal @db.Decimal(18, 2)
+  administrativeFee     Decimal @db.Decimal(18, 2)
+  totalRepaymentAmount  Decimal @db.Decimal(18, 2)
+
+  startDate             DateTime
+  maturityDate          DateTime
+
+  generatedAt           DateTime?
+  printedAt             DateTime?
+  signedAt              DateTime?
+
+  renderedContentHash   String?
+  documentUrl           String?
+  documentHash          String?
+
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+
+  signatures            AgreementSignature[]
+  fees                  AgreementFee[]
+
+  @@index([branchId])
+  @@index([status])
+  @@index([maturityDate])
+}
+
+model AgreementSignature {
+  id                    String   @id @default(uuid()) 
+
+  agreementId           String   
+  agreement             Agreement @relation(fields: [agreementId], references: [id], onDelete: Cascade)
+
+  partyType             ContractPartyType
+  signerName            String
+  signerUserId          String?  
+
+  signatureType         SignatureType
+  signatureImageUrl     String?
+
+  signedAt              DateTime?
+  ipAddress             String?
+  userAgent             String?
+
+  createdAt             DateTime @default(now())
+
+  @@index([agreementId])
+}
+
+
+// ============================================================
+// HANDOVER / INSPECTION / RELEASE
+// ============================================================
+
+model ItemInspection {
+  id                    String   @id @default(uuid()) 
+
+  itemId                String   
+  item                  PawnItem @relation(fields: [itemId], references: [id], onDelete: Cascade)
+
+  applicationId         String?  
+  branchId              String   
+  branch                Branch  @relation(fields: [branchId], references: [id])
+
+  type                  InspectionType
+
+  performedById         String   
+  performedBy            User     @relation("InspectionPerformer", fields: [performedById], references: [id])
+
+  condition             ItemCondition?
+  description           String?
+  estimatedValue        Decimal? @db.Decimal(18, 2)
+
+  inspectedAt           DateTime @default(now())
+
+  photos                ItemInspectionPhoto[]
+
+  @@index([itemId])
+  @@index([applicationId])
+  @@index([branchId])
+}
+
+model ItemInspectionPhoto {
+  id                    String   @id @default(uuid()) 
+
+  inspectionId          String   
+  inspection             ItemInspection @relation(fields: [inspectionId], references: [id], onDelete: Cascade)
+
+  photoType             ItemPhotoType
+  fileUrl               String
+  fileHash              String?
+
+  createdAt              DateTime @default(now())
+
+  @@index([inspectionId])
+}
+
+model ItemHandover {
+  id                    String   @id @default(uuid()) 
+
+  itemId                String   @unique 
+  item                  PawnItem @relation(fields: [itemId], references: [id])
+
+  applicationId         String   @unique 
+  application            PawnApplication @relation(fields: [applicationId], references: [id])
+
+  operatorId            String   
+  operator              User     @relation("HandoverOperator", fields: [operatorId], references: [id])
+
+  customerConfirmed     Boolean @default(false)
+  operatorConfirmed     Boolean @default(false)
+
+  receivedAt            DateTime @default(now())
+  notes                 String?
+
+  inspectionId          String?  
+
+  @@index([operatorId])
+}
+
+model ItemRelease {
+  id                    String   @id @default(uuid()) 
+
+  itemId                String   @unique 
+  item                  PawnItem @relation(fields: [itemId], references: [id])
+
+  operatorId            String   
+  operator              User     @relation("ReleaseOperator", fields: [operatorId], references: [id])
+
+  customerConfirmed     Boolean @default(false)
+  operatorConfirmed     Boolean @default(false)
+
+  releasedAt            DateTime @default(now())
+  notes                 String?
+
+  inspectionId          String?  
+
+  @@index([operatorId])
+}
+
+
+// ============================================================
+// DISBURSEMENT
+// ============================================================
+
+model Disbursement {
+  id                    String   @id @default(uuid()) 
+  disbursementNumber    String   @unique
+
+  applicationId         String   @unique 
+  application            PawnApplication @relation(fields: [applicationId], references: [id])
+
+  branchId              String   
+  branch                Branch   @relation(fields: [branchId], references: [id])
+
+  cashierId             String   
+  cashier               User     @relation("DisbursementCashier", fields: [cashierId], references: [id])
+
+  amount                Decimal @db.Decimal(18, 2)
+  method                DisbursementMethod
+
+  status                DisbursementStatus @default(PENDING)
+
+  paidAt                DateTime?
+  notes                 String?
+
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+
+  cashTransaction       CashTransaction?
+
+  @@index([branchId])
+  @@index([cashierId])
+  @@index([status])
+}
+
+
+// ============================================================
+// PAYMENTS
+// ============================================================
+
+model Payment {
+  id                    String   @id @default(uuid()) 
+  paymentNumber         String   @unique
+
+  applicationId         String   
+  application            PawnApplication @relation(fields: [applicationId], references: [id])
+
+  customerId            String   
+  customer              User     @relation(fields: [customerId], references: [id])
+
+  branchId              String   
+  branch                Branch   @relation(fields: [branchId], references: [id])
+
+  type                  PaymentType
+  amount                Decimal @db.Decimal(18, 2)
+  method                PaymentMethod
+
+  status                PaymentStatus @default(PENDING)
+
+  referenceNumber       String?
+  proofUrl              String?
+
+  verifiedById          String? 
+  verifiedAt            DateTime?
+  rejectionReason       String?
+  paidAt                DateTime?
+
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+
+  cashTransaction       CashTransaction?
+  accountingEntries     AccountingEntry[]
+
+  @@index([applicationId])
+  @@index([customerId])
+  @@index([branchId])
+  @@index([status])
+  @@index([paidAt])
+}
+
+
+// ============================================================
+// SETTLEMENT
+// ============================================================
+
+model PawnSettlement {
+  id                    String   @id @default(uuid()) 
+
+  applicationId         String   @unique 
+  application            PawnApplication @relation(fields: [applicationId], references: [id])
+
+  principalDue          Decimal @db.Decimal(18, 2)
+  ujrahDue              Decimal @db.Decimal(18, 2)
+  administrativeDue    Decimal @db.Decimal(18, 2)
+  totalDue              Decimal @db.Decimal(18, 2)
+
+  principalPaid         Decimal @default(0) @db.Decimal(18, 2)
+  ujrahPaid             Decimal @default(0) @db.Decimal(18, 2)
+  administrativePaid    Decimal @default(0) @db.Decimal(18, 2)
+  totalPaid             Decimal @default(0) @db.Decimal(18, 2)
+
+  remainingAmount       Decimal @db.Decimal(18, 2)
+
+  settledAt             DateTime?
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+
+  @@index([remainingAmount])
+}
+
+
+// ============================================================
+// CASH LEDGER
+// ============================================================
+
+model CashTransaction {
+  id                    String   @id @default(uuid()) 
+  transactionNumber     String   @unique
+
+  branchId              String   
+  branch                Branch   @relation(fields: [branchId], references: [id])
+
+  type                  CashTransactionType
+  amount                Decimal @db.Decimal(18, 2)
+  status                CashTransactionStatus @default(PENDING)
+
+  disbursementId        String?  @unique 
+  disbursement          Disbursement? @relation(fields: [disbursementId], references: [id])
+
+  paymentId             String?  @unique 
+  payment               Payment? @relation(fields: [paymentId], references: [id])
+
+  cashierId             String   
+  cashier               User     @relation("Cashier", fields: [cashierId], references: [id])
+
+  description           String?
+  createdAt             DateTime @default(now())
+  completedAt           DateTime?
+
+  accountingEntries     AccountingEntry[]
+
+  @@index([branchId])
+  @@index([type])
+  @@index([status])
+}
+
+
+// ============================================================
+// STORAGE / WAREHOUSE
+// ============================================================
+
+model StorageLocation {
+  id                    String   @id @default(uuid()) 
+
+  branchId              String   
+  branch                Branch   @relation(fields: [branchId], references: [id])
+
+  code                  String
+  name                  String
+  room                  String?
+  rack                  String?
+  shelf                 String?
+  box                   String?
+  slot                  String?
+
+  capacity              Int?
+  isActive              Boolean @default(true)
+
+  assignments           StorageAssignment[]
+  movements             StorageMovement[]
+
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+
+  @@unique([branchId, code])
+  @@index([branchId])
+}
+
+model StorageAssignment {
+  id                    String   @id @default(uuid()) 
+
+  itemId                String   @unique 
+  item                  PawnItem @relation(fields: [itemId], references: [id])
+
+  locationId            String   
+  location              StorageLocation @relation(fields: [locationId], references: [id])
+
+  assignedAt            DateTime @default(now())
+  releasedAt            DateTime?
+  isCurrent             Boolean @default(true)
+
+  createdAt             DateTime @default(now())
+
+  @@index([locationId])
+  @@index([isCurrent])
+}
+
+model StorageMovement {
+  id                    String   @id @default(uuid()) 
+
+  itemId                String   
+  item                  PawnItem @relation(fields: [itemId], references: [id])
+
+  locationId            String   
+  location              StorageLocation @relation(fields: [locationId], references: [id])
+
+  type                  StorageMovementType
+
+  performedById         String   
+  performedBy            User     @relation("StorageOperator", fields: [performedById], references: [id])
+
+  notes                 String?
+  createdAt             DateTime @default(now())
+
+  @@index([itemId])
+  @@index([locationId])
+}
+
+
+// ============================================================
+// DEADLINES / STATUS
+// ============================================================
+
+model Deadline {
+  id                    String   @id @default(uuid()) 
+
+  applicationId         String   
+  application            PawnApplication @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+
+  type                  DeadlineType
+  dueAt                 DateTime
+  completedAt           DateTime?
+  isExpired             Boolean @default(false)
+
+  createdAt             DateTime @default(now())
+
+  @@index([applicationId])
+  @@index([dueAt])
+  @@index([isExpired])
+}
+
+model ApplicationStatusHistory {
+  id                    String   @id @default(uuid()) 
+
+  applicationId         String   
+  application            PawnApplication @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+
+  fromStatus            ApplicationStatus?
+  toStatus              ApplicationStatus
+
+  changedById           String?  
+  notes                 String?
+
+  createdAt             DateTime @default(now())
+
+  @@index([applicationId])
+  @@index([createdAt])
+}
+
+
+// ============================================================
+// AUCTION
+// ============================================================
+
+model Auction {
+  id                    String   @id @default(uuid()) 
+  auctionNumber         String   @unique
+
+  branchId              String   
+  branch                Branch   @relation(fields: [branchId], references: [id])
+
+  title                 String
+  description           String?
+  status                AuctionStatus @default(DRAFT)
+
+  startAt               DateTime
+  endAt                 DateTime
+
+  createdById            String   
+  createdBy              User     @relation("AuctionCreator", fields: [createdById], references: [id])
+
+  closedAt               DateTime?
+
+  createdAt              DateTime @default(now())
+  updatedAt              DateTime @updatedAt
+
+  items                  AuctionItem[]
+  settlements             AuctionSettlement[]
+
+  @@index([branchId])
+  @@index([status])
+  @@index([startAt])
+  @@index([endAt])
+}
+
+model AuctionItem {
+  id                    String   @id @default(uuid()) 
+
+  auctionId             String   
+  auction               Auction  @relation(fields: [auctionId], references: [id], onDelete: Cascade)
+
+  itemId                String   @unique 
+  item                  PawnItem @relation(fields: [itemId], references: [id])
+
+  startingPrice         Decimal @db.Decimal(18, 2)
+  reservePrice          Decimal? @db.Decimal(18, 2)
+  finalPrice            Decimal? @db.Decimal(18, 2)
+
+  winningBidId          String?  @unique 
+  soldAt                DateTime?
+
+  bids                  AuctionBid[]
+  settlement             AuctionSettlement?
+
+  createdAt              DateTime @default(now())
+  updatedAt              DateTime @updatedAt
+
+  @@index([auctionId])
+}
+
+model AuctionBid {
+  id                    String   @id @default(uuid()) 
+
+  auctionItemId         String   
+  auctionItem           AuctionItem @relation(fields: [auctionItemId], references: [id], onDelete: Cascade)
+
+  bidderId              String   
+  bidder                User     @relation(fields: [bidderId], references: [id])
+
+  amount                Decimal @db.Decimal(18, 2)
+  status                BidStatus @default(ACTIVE)
+
+  createdAt              DateTime @default(now())
+
+  @@index([auctionItemId])
+  @@index([bidderId])
+  @@index([amount])
+}
+
+model AuctionSettlement {
+  id                    String   @id @default(uuid()) 
+
+  auctionId             String   
+  auction                Auction  @relation(fields: [auctionId], references: [id])
+
+  auctionItemId         String   @unique 
+  auctionItem            AuctionItem @relation(fields: [auctionItemId], references: [id])
+
+  winnerUserId           String   
+  winner                 User     @relation("AuctionSettlementOperator", fields: [winnerUserId], references: [id])
+
+  winningAmount         Decimal @db.Decimal(18, 2)
+
+  status                AuctionSettlementStatus @default(PENDING)
+
+  paymentStatus         AuctionPaymentStatus @default(PENDING)
+  paidAt                DateTime?
+
+  deliveryStatus        AuctionDeliveryStatus @default(PENDING)
+  deliveredAt           DateTime?
+
+  createdAt              DateTime @default(now())
+  updatedAt              DateTime @updatedAt
+
+  payments               AuctionPayment[]
+
+  @@index([auctionId])
+  @@index([winnerUserId])
+}
+
+model AuctionPayment {
+  id                    String   @id @default(uuid()) 
+
+  settlementId          String   
+  settlement             AuctionSettlement @relation(fields: [settlementId], references: [id], onDelete: Cascade)
+
+  amount                Decimal @db.Decimal(18, 2)
+  method                PaymentMethod
+  referenceNumber       String?
+
+  status                AuctionPaymentStatus @default(PENDING)
+
+  paidAt                DateTime?
+
+  createdAt              DateTime @default(now())
+
+  @@index([settlementId])
+}
+
+
+// ============================================================
+// NOTIFICATIONS
+// ============================================================
+
+model Notification {
+  id                    String   @id @default(uuid()) 
+
+  userId                String   
+  user                  User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  type                  NotificationType
+  channel               NotificationChannel
+
+  title                 String
+  message               String
+  status                NotificationStatus @default(PENDING)
+
+  relatedEntityType     String?
+  relatedEntityId       String?
+
+  sentAt                DateTime?
+  readAt                DateTime?
+
+  createdAt             DateTime @default(now())
+
+  @@index([userId])
+  @@index([status])
+  @@index([createdAt])
+}
+
+
+// ============================================================
+// ACCOUNTING / DOUBLE ENTRY
+// ============================================================
+
+model ChartOfAccount {
+  id                    String   @id @default(uuid()) 
+
+  companyId             String   
+  company               Company  @relation(fields: [companyId], references: [id])
+
+  code                  String
+  name                  String
+  description           String?
+
+  parentId              String?  
+  parent                ChartOfAccount? @relation("AccountTree", fields: [parentId], references: [id])
+  children              ChartOfAccount[] @relation("AccountTree")
+
+  isActive              Boolean @default(true)
+
+  createdAt              DateTime @default(now())
+  updatedAt              DateTime @updatedAt
+
+  entries               AccountingEntry[]
+
+  @@unique([companyId, code])
+  @@index([parentId])
+}
+
+model AccountingPeriod {
+  id                    String   @id @default(uuid()) 
+
+  companyId             String   
+  company               Company  @relation(fields: [companyId], references: [id])
+
+  name                  String
+  startDate             DateTime
+  endDate               DateTime
+
+  status                AccountingPeriodStatus @default(OPEN)
+
+  closedAt              DateTime?
+
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+
+  entries               AccountingEntry[]
+
+  @@unique([companyId, name])
+  @@index([startDate, endDate])
+}
+
+model AccountingEntry {
+  id                    String   @id @default(uuid()) 
+
+  periodId              String   
+  period                AccountingPeriod @relation(fields: [periodId], references: [id])
+
+  accountId             String   
+  account               ChartOfAccount @relation(fields: [accountId], references: [id])
+
+  branchId              String?  
+  branch                Branch? @relation(fields: [branchId], references: [id])
+
+  entryType             AccountingEntryType
+  amount                Decimal @db.Decimal(18, 2)
+
+  referenceType         AccountingReferenceType?
+  referenceId           String?
+
+  description           String?
+
+  paymentId             String? 
+  payment               Payment? @relation(fields: [paymentId], references: [id])
+
+  cashTransactionId     String? 
+  cashTransaction       CashTransaction? @relation(fields: [cashTransactionId], references: [id])
+
+  createdAt             DateTime @default(now())
+
+  @@index([periodId])
+  @@index([accountId])
+  @@index([branchId])
+  @@index([referenceType, referenceId])
+}
+
+
+// ============================================================
+// FILES / DOCUMENT METADATA
+// ============================================================
+
+model FileAsset {
+  id                    String   @id @default(uuid()) 
+
+  ownerType             FileOwnerType
+  ownerId               String
+
+  originalName          String
+  storageKey            String
+  mimeType              String
+  sizeBytes             BigInt
+  sha256                String?
+
+  isPrivate             Boolean @default(true)
+
+  createdAt             DateTime @default(now())
+
+  @@index([ownerType, ownerId])
+}
+
+
+// ============================================================
+// AUDIT
+// ============================================================
+
+model AuditLog {
+  id                    String   @id @default(uuid()) 
+
+  actorId               String?  
+  actor                 User?    @relation("AuditActor", fields: [actorId], references: [id])
+
+  action                AuditAction
+
+  entityType            String
+  entityId              String?
+
+  beforeData            Json?
+  afterData             Json?
+
+  ipAddress             String?
+  userAgent             String?
+
+  createdAt              DateTime @default(now())
+
+  @@index([actorId])
+  @@index([entityType, entityId])
+  @@index([action])
+  @@index([createdAt])
+}
+
+//Update Tambahan
+
+enum VerificationTokenType {
+  EMAIL_VERIFICATION
+  PASSWORD_RESET
+}
+
+model EmailVerificationToken {
+  id         String   @id @default(uuid())
+  userId     String
+  tokenHash  String   @unique
+  expiresAt  DateTime
+  createdAt  DateTime @default(now())
+  type       VerificationTokenType @default(EMAIL_VERIFICATION)
+  usedAt     DateTime?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([expiresAt])
+}
+
+
+
+model RateLimit {
+  id        String   @id @default(cuid())
+  key       String   @unique @db.VarChar(191)
+  count     Int      @default(0)
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([expiresAt])
+  @@map("rate_limits")
+}
+
+
+

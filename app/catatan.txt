@@ -1,0 +1,6 @@
+kombinasi warna
+        ███████  #075985  Biru
+        ███████  #0EA5A4  Teal
+        ███████  #22C55E  Hijau
+        ███████  #F59E0B  Gold/Amber
+        ███████  #F8FAFC  Background
